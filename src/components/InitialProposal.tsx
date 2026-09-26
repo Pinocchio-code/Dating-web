@@ -60,12 +60,12 @@ export const InitialProposal: React.FC<InitialProposalProps> = ({
   const yesScale = Math.min(1 + dodgeCount * 0.08, 1.6);
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto flex flex-col items-center text-center px-4 py-6 md:py-12">
+    <div className="relative w-full max-w-xl mx-auto flex flex-col items-center text-center px-4 py-2 sm:py-4">
       {/* Sound toggle in corner */}
       <button
         type="button"
         onClick={toggleSound}
-        className="absolute top-2 right-4 text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/70 hover:bg-white text-slate-600 shadow-sm border border-rose-100 transition-colors"
+        className="absolute top-0 right-4 text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/70 hover:bg-white text-slate-600 shadow-sm border border-rose-100 transition-colors cursor-pointer"
         title={soundEnabled ? "Mute sounds" : "Enable sounds"}
       >
         {soundEnabled ? (
@@ -82,44 +82,43 @@ export const InitialProposal: React.FC<InitialProposalProps> = ({
       </button>
 
       {/* Decorative Badge */}
-      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-50 border border-rose-200/80 text-rose-700 text-xs md:text-sm font-medium mb-6">
-        <Sparkles className="w-4 h-4 text-rose-500 animate-spin" style={{ animationDuration: '8s' }} />
+      <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-rose-50 border border-rose-200/80 text-rose-700 text-xs font-medium mb-3">
+        <Sparkles className="w-3.5 h-3.5 text-rose-500 animate-spin" style={{ animationDuration: '8s' }} />
         <span>Official Romance Inquiry</span>
-        <Sparkles className="w-4 h-4 text-rose-500 animate-spin" style={{ animationDuration: '8s' }} />
+        <Sparkles className="w-3.5 h-3.5 text-rose-500 animate-spin" style={{ animationDuration: '8s' }} />
       </div>
 
       {/* Hero Illustration */}
-      <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-full overflow-hidden shadow-xl ring-4 ring-rose-200/70 mb-6 bg-gradient-to-tr from-rose-100 to-pink-50 flex items-center justify-center">
+      <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden shadow-lg ring-4 ring-rose-200/70 mb-3 bg-gradient-to-tr from-rose-100 to-pink-50 flex items-center justify-center">
         <img
           src="/src/assets/images/date_hero_art_1790420881730.jpg"
           alt="Sweethearts together"
           referrerPolicy="no-referrer"
           className="w-full h-full object-cover"
           onError={(e) => {
-            // Graceful fallback to styled icon if image loading has issues
             (e.target as HTMLElement).style.display = 'none';
           }}
         />
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
-          <Heart className="w-16 h-16 text-rose-400 fill-rose-300 animate-pulse" />
+          <Heart className="w-12 h-12 text-rose-400 fill-rose-300 animate-pulse" />
         </div>
       </div>
 
       {/* The Central Question */}
-      <h1 className="text-3xl md:text-5xl font-serif font-bold text-slate-900 tracking-tight leading-tight mb-3">
+      <h1 className="text-2xl sm:text-4xl font-serif font-bold text-slate-900 tracking-tight leading-tight mb-2">
         Will you go on a date with me,{' '}
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-pink-500">
           {sweetheartName || 'sweetheart'}?
         </span>
       </h1>
 
-      <p className="text-sm md:text-base text-slate-600 max-w-md mx-auto mb-8 font-normal">
+      <p className="text-xs sm:text-sm text-slate-600 max-w-sm mx-auto mb-4 font-normal">
         A very important decision awaits! Only one of these buttons is truly accepting answers... 💕
       </p>
 
       {/* Dodge count humor note if user is persistently chasing "No" */}
       {dodgeCount > 0 && (
-        <div className="mb-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs animate-bounce">
+        <div className="mb-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-[11px] animate-bounce">
           <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
           <span>
             {dodgeCount === 1
@@ -132,7 +131,7 @@ export const InitialProposal: React.FC<InitialProposalProps> = ({
       {/* Interactive Choice Container */}
       <div
         ref={containerRef}
-        className="relative w-full max-w-md min-h-[160px] flex items-center justify-center gap-6 mt-2"
+        className="relative w-full max-w-md min-h-[120px] flex items-center justify-center gap-6 mt-1"
       >
         {/* The YES Button */}
         <button

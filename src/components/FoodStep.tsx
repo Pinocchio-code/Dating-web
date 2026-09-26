@@ -7,12 +7,11 @@ import {
   Soup, 
   Utensils, 
   Coffee, 
-  Check, 
-  Heart, 
-  Sparkles, 
-  Search, 
-  ChevronDown 
+  ChevronDown, 
+  Layers,
+  Heart
 } from 'lucide-react';
+import { FoodModal } from './FoodModal';
 import { soundFX } from '../utils/audio';
 
 interface FoodStepProps {
@@ -36,23 +35,11 @@ export const FoodStep: React.FC<FoodStepProps> = ({
   onNext,
   sweetheartName,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const currentCategoryDef = useMemo(() => {
     return FOOD_CATEGORIES.find((c) => c.id === selectedCategory) || FOOD_CATEGORIES[0];
   }, [selectedCategory]);
-
-  const filteredItems = useMemo(() => {
-    if (!searchQuery.trim()) return currentCategoryDef.items;
-    const query = searchQuery.toLowerCase();
-    return currentCategoryDef.items.filter(
-      (item) =>
-        item.name.toLowerCase().includes(query) ||
-        item.description.toLowerCase().includes(query) ||
-        item.category.toLowerCase().includes(query) ||
-        item.tag.toLowerCase().includes(query)
-    );
-  }, [currentCategoryDef, searchQuery]);
 
   const getCategoryIcon = (iconName: string) => {
     switch (iconName) {
@@ -76,21 +63,21 @@ export const FoodStep: React.FC<FoodStepProps> = ({
   const hasSelection = selectedFoods.length > 0;
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 py-4 space-y-6">
+    <div className="w-full max-w-xl mx-auto px-4 py-2 space-y-4">
       {/* Title */}
       <div className="text-center">
-        <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900">
+        <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 leading-tight">
           What Are We Feasting On, {sweetheartName || 'Sweetheart'}? 🍽️
         </h2>
-        <p className="text-sm text-slate-600 mt-1">
-          Choose a cuisine category from the box below, then select your favorite dishes!
+        <p className="text-xs sm:text-sm text-slate-600 mt-1">
+          Pick your cuisine category and select dishes via popup!
         </p>
       </div>
 
       {/* Single Category Selection Box */}
-      <div className="bg-white rounded-2xl p-5 shadow-xs border border-rose-200">
-        <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
-          Select Food Category:
+      <div className="bg-white rounded-2xl p-4 shadow-xs border border-rose-200">
+        <label className="block text-[11px] font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+          Select Cuisine Category:
         </label>
 
         <div className="relative">
@@ -105,10 +92,10 @@ export const FoodStep: React.FC<FoodStepProps> = ({
               onSelectCategory(newCat);
               soundFX.playChime();
             }}
-            className="w-full appearance-none pl-11 pr-10 py-3.5 bg-rose-50/50 hover:bg-rose-50 border-2 border-rose-300 rounded-xl text-slate-900 font-bold text-base focus:outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer transition-colors"
+            className="w-full appearance-none pl-11 pr-10 py-3 bg-rose-50/50 hover:bg-rose-50 border-2 border-rose-300 rounded-xl text-slate-900 font-bold text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer transition-colors"
           >
             {FOOD_CATEGORIES.map((cat) => (
-              <option key={cat.id} value={cat.id} className="py-2 text-slate-900">
+              <option key={cat.id} value={cat.id}>
                 {cat.title}
               </option>
             ))}
@@ -119,138 +106,73 @@ export const FoodStep: React.FC<FoodStepProps> = ({
           </div>
         </div>
 
-        {/* Category Description Banner */}
-        <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs text-slate-600">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-rose-500 shrink-0" />
-            <span>{currentCategoryDef.description}</span>
-          </div>
+        <div className="mt-2.5 text-[11px] text-slate-500 truncate">
+          <span>{currentCategoryDef.description}</span>
         </div>
       </div>
 
-      {/* Selectable Food Items under Chosen Category */}
-      <div className="bg-white rounded-2xl p-5 shadow-xs border border-rose-100 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-          <div>
-            <h3 className="font-bold text-slate-900 text-sm md:text-base flex items-center gap-2">
-              <Utensils className="w-4 h-4 text-rose-500" />
-              <span>Select Dishes (Pick 1 or Multiple):</span>
-            </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Tap any dish to add or remove it from our date feast
-            </p>
-          </div>
-
-          {/* Quick Search */}
-          <div className="relative min-w-[200px]">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search dish or ingredient..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-400"
-            />
-          </div>
+      {/* Active Selected Dishes Preview Card + Popup Trigger Button */}
+      <div className="bg-white rounded-2xl p-4 shadow-xs border border-rose-200">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            Selected Feasts:
+          </span>
+          <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">
+            {selectedFoods.length} Selected
+          </span>
         </div>
 
-        {/* Selected Dishes Summary Counter */}
-        {selectedFoods.length > 0 && (
-          <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-xs">
-                {selectedFoods.length}
-              </div>
-              <div>
-                <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider">
-                  Dishes Picked for Date:
-                </span>
-                <span className="text-slate-900 font-bold text-xs line-clamp-1">
-                  {selectedFoods.join(', ')}
-                </span>
-              </div>
-            </div>
-            <span className="text-rose-600 font-semibold text-[11px] whitespace-nowrap">
-              Feast Ready 😋
-            </span>
-          </div>
-        )}
-
-        {/* List of 10+ Food Items */}
-        <div className="grid grid-cols-1 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
-          {filteredItems.map((food) => {
-            const isSelected = selectedFoods.includes(food.name);
-
-            return (
-              <button
-                key={food.id}
-                type="button"
-                onClick={() => {
-                  soundFX.playChime();
-                  onToggleFood(food.name);
-                }}
-                className={`p-3.5 rounded-xl text-left border transition-all flex items-start justify-between gap-3 cursor-pointer ${
-                  isSelected
-                    ? 'bg-rose-50/90 border-rose-500 shadow-xs ring-2 ring-rose-400/40'
-                    : 'bg-slate-50/60 hover:bg-slate-50 border-slate-200 hover:border-rose-200 text-slate-800'
-                }`}
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900 text-sm">
-                      {food.name}
-                    </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-medium">
-                      {food.tag}
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                    {food.description}
-                  </p>
-                  <span className="text-[10px] text-slate-400 mt-1 block">
-                    Category: {food.category}
-                  </span>
-                </div>
-
-                <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-1 transition-all ${
-                    isSelected
-                      ? 'bg-rose-500 text-white shadow-xs'
-                      : 'border border-slate-300 bg-white text-transparent'
-                  }`}
+        <div className="p-3.5 bg-gradient-to-br from-rose-50/80 to-pink-50/50 rounded-xl border border-rose-200/90 min-h-[70px] flex flex-col justify-center">
+          {selectedFoods.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {selectedFoods.map((foodName) => (
+                <span
+                  key={foodName}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-rose-200 text-xs font-semibold text-slate-800 shadow-2xs"
                 >
-                  <Check className="w-3.5 h-3.5 stroke-[3]" />
-                </div>
-              </button>
-            );
-          })}
-
-          {filteredItems.length === 0 && (
-            <div className="text-center py-6 text-xs text-slate-400">
-              No dishes matching &ldquo;{searchQuery}&rdquo;. Try another craving!
+                  <span>✓</span>
+                  <span>{foodName}</span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <div className="text-xs text-slate-500 italic text-center py-2">
+              No dishes picked yet. Click below to browse and select!
             </div>
           )}
         </div>
+
+        {/* The POPUP trigger button */}
+        <button
+          type="button"
+          onClick={() => {
+            soundFX.playChime();
+            setIsModalOpen(true);
+          }}
+          className="mt-3 w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
+        >
+          <Layers className="w-3.5 h-3.5 text-rose-400" />
+          <span>Browse All Dishes in Popup (10+ Items)</span>
+        </button>
       </div>
 
-      {/* Special Requests or Dietary Notes */}
-      <div className="bg-white rounded-2xl p-4 shadow-xs border border-rose-100">
-        <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
-          <Heart className="w-3.5 h-3.5 text-rose-500" />
-          <span>Special cravings or instructions: (Optional)</span>
+      {/* Special Request */}
+      <div className="bg-white rounded-2xl p-3 shadow-xs border border-rose-100">
+        <label className="block text-[11px] font-semibold text-slate-700 mb-1 flex items-center gap-1">
+          <Heart className="w-3 h-3 text-rose-500" />
+          <span>Special cravings or dietary notes: (Optional)</span>
         </label>
-        <textarea
-          rows={2}
+        <input
+          type="text"
           value={foodSpecialRequest}
           onChange={(e) => onUpdateSpecialRequest(e.target.value)}
-          placeholder="e.g. Extra spicy awaze, well-done, lots of melted cheese, extra dessert..."
-          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
+          placeholder="e.g. Extra spicy awaze, well-done, lots of melted cheese..."
+          className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-400"
         />
       </div>
 
-      {/* Next Step Button */}
-      <div className="pt-2">
+      {/* Next Step Button (fits on screen without scrolling) */}
+      <div className="pt-1">
         <button
           type="button"
           disabled={!hasSelection}
@@ -258,7 +180,7 @@ export const FoodStep: React.FC<FoodStepProps> = ({
             soundFX.playChime();
             onNext();
           }}
-          className={`w-full py-4 rounded-2xl font-semibold text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`w-full py-3.5 rounded-2xl font-semibold text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer ${
             hasSelection
               ? 'bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white shadow-rose-500/25 active:scale-[0.99]'
               : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
@@ -268,6 +190,16 @@ export const FoodStep: React.FC<FoodStepProps> = ({
           <span>👉</span>
         </button>
       </div>
+
+      {/* POPUP MODAL for selecting food */}
+      <FoodModal
+        isOpen={isModalOpen}
+        selectedCategory={selectedCategory}
+        selectedFoods={selectedFoods}
+        onSelectCategory={onSelectCategory}
+        onToggleFood={onToggleFood}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };

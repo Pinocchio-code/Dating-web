@@ -173,7 +173,7 @@ export default function App() {
       </header>
 
       {/* Main Content Area */}
-      <main className="relative z-10 flex-1 flex flex-col justify-center py-4 md:py-8">
+      <main className="relative z-10 flex-1 flex flex-col justify-center py-1 sm:py-2 md:py-4">
         {/* Step Indicator (shown during steps 1 to 5) */}
         {currentStep >= 1 && (
           <StepIndicator

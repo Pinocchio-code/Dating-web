@@ -23,9 +23,9 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({
   ];
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 pt-3 pb-2">
+    <div className="w-full max-w-xl mx-auto px-4 pt-1.5 pb-1">
       {/* Top back & progress breadcrumb */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-2">
         {currentStep > 1 && currentStep < 5 ? (
           <button
             type="button"

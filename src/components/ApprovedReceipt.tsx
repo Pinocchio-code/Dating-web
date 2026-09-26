@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { DatePlanState } from '../types';
 import { PLACE_CATEGORIES } from '../data/dateOptions';
@@ -12,11 +12,11 @@ import {
   Printer, 
   RotateCcw, 
   Heart, 
-  Sparkles, 
-  QrCode,
+  FileText,
   Copy,
   Check
 } from 'lucide-react';
+import { ReceiptModal } from './ReceiptModal';
 import { soundFX } from '../utils/audio';
 
 interface ApprovedReceiptProps {
@@ -26,27 +26,27 @@ interface ApprovedReceiptProps {
 
 export const ApprovedReceipt: React.FC<ApprovedReceiptProps> = ({ plan, onRestart }) => {
   const [copied, setCopied] = useState(false);
-  const receiptRef = useRef<HTMLDivElement>(null);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
 
   // Trigger celebratory confetti on mount
   useEffect(() => {
     soundFX.playStamp();
     
-    const end = Date.now() + 2 * 1000;
+    const end = Date.now() + 1.8 * 1000;
     const colors = ['#f43f5e', '#ec4899', '#fb7185', '#fda4af', '#f59e0b'];
 
     (function frame() {
       confetti({
-        particleCount: 4,
+        particleCount: 3,
         angle: 60,
-        spread: 55,
+        spread: 50,
         origin: { x: 0 },
         colors: colors,
       });
       confetti({
-        particleCount: 4,
+        particleCount: 3,
         angle: 120,
-        spread: 55,
+        spread: 50,
         origin: { x: 1 },
         colors: colors,
       });
@@ -63,9 +63,8 @@ export const ApprovedReceipt: React.FC<ApprovedReceiptProps> = ({ plan, onRestar
 
   const formattedDate = plan.selectedDate
     ? new Date(plan.selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
+        weekday: 'short',
+        month: 'short',
         day: 'numeric',
       })
     : 'Upcoming Special Date';
@@ -116,7 +115,7 @@ export const ApprovedReceipt: React.FC<ApprovedReceiptProps> = ({ plan, onRestar
   const handleCopyShare = () => {
     const text = `🎉 IT'S OFFICIAL! OUR DATE HAS BEEN GRANTED & APPROVED! ❤️\n\n` +
       `📅 Date: ${formattedDate} (${timeDisplay})\n` +
-      `📍 Place in Ethiopia: ${finalPlaceName} [${placeCat?.title}] ${plan.placeSpecificNote ? `(${plan.placeSpecificNote})` : ''}\n` +
+      `📍 Place: ${finalPlaceName} [${placeCat?.title}] ${plan.placeSpecificNote ? `(${plan.placeSpecificNote})` : ''}\n` +
       `🍽️ Feast: ${finalDishes.join(', ')}\n` +
       `💳 Payment: 100% covered by ${plan.admirerName || 'Admirer'} via ${plan.paymentMethod.toUpperCase()}\n` +
       `💰 Sweetheart Cost: 0.00 ETB (Priceless)\n` +
@@ -134,209 +133,128 @@ export const ApprovedReceipt: React.FC<ApprovedReceiptProps> = ({ plan, onRestar
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 py-4 space-y-6">
+    <div className="w-full max-w-xl mx-auto px-4 py-2 space-y-4">
       {/* Top Banner */}
       <div className="text-center">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold mb-2">
-          <CheckCircle className="w-4 h-4 text-emerald-600" />
-          <span>Application Form: APPROVED</span>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold mb-1.5">
+          <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Application: APPROVED &bull; Couple Maber</span>
         </div>
-        <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900">
+        <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 leading-tight">
           Dating Officially Granted! 🎉
         </h2>
-        <p className="text-sm text-slate-600 mt-1 max-w-md mx-auto">
-          Here is your approved, legally binding date reservation receipt. Keep this safe as proof of 100% VIP treatment!
+        <p className="text-xs text-slate-600 mt-0.5">
+          Your reservation is approved &amp; sealed with 100% VIP treatment!
         </p>
       </div>
 
-      {/* The Printable Official Receipt */}
-      <div
-        ref={receiptRef}
-        className="relative bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-rose-200 text-slate-800 overflow-hidden print:shadow-none print:border-none"
-      >
-        {/* Decorative Top Serrated edge simulation */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-rose-400 via-pink-500 to-rose-400" />
+      {/* Sleek Compact Approved Card (Fits on screen without page scroll) */}
+      <div className="relative bg-white rounded-3xl p-4 sm:p-5 shadow-xl border border-rose-200 text-slate-800 overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-400 via-pink-500 to-rose-400" />
 
-        {/* Big Official Rubber Stamp Overlay */}
-        <div className="absolute right-4 top-16 md:right-8 md:top-14 pointer-events-none z-20">
-          <div className="animate-stamp border-4 border-rose-600 text-rose-600 rounded-xl px-3 py-1.5 font-serif font-black text-xs md:text-sm tracking-wider uppercase opacity-90 shadow-xs flex items-center gap-1.5 backdrop-blur-xs bg-white/40">
-            <Heart className="w-4 h-4 fill-rose-600" />
-            <span>APPROVED &amp; GRANTED</span>
-          </div>
-        </div>
-
-        {/* Receipt Header */}
-        <div className="border-b border-slate-200 pb-4 mb-5 text-center sm:text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
           <div>
-            <div className="flex items-center gap-2 justify-center sm:justify-start">
-              <span className="text-lg font-serif font-bold text-slate-900">
-                Sweetheart Date Certificate
+            <div className="flex items-center gap-1.5">
+              <span className="font-serif font-bold text-slate-900 text-sm sm:text-base">
+                Reservation #{plan.reservationId}
               </span>
-              <Sparkles className="w-4 h-4 text-rose-500" />
+              <span className="border border-rose-600 text-rose-600 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase">
+                APPROVED ❤️
+              </span>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Ethiopian Ministry of Romance &bull; Powered by Couple Maber
+            <p className="text-[10px] text-slate-400">
+              Sweetheart: <strong className="text-slate-700">{plan.sweetheartName || 'Sweetheart'}</strong> &bull; Sponsoring: <strong className="text-slate-700">{plan.admirerName || 'Admirer'}</strong>
             </p>
           </div>
 
-          <div className="text-xs text-slate-500 font-mono text-center sm:text-right">
-            <div>
-              ID: <span className="font-bold text-slate-900">#{plan.reservationId}</span>
-            </div>
-            <div>Issued: {new Date().toLocaleDateString()}</div>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playChime();
+              setIsReceiptModalOpen(true);
+            }}
+            className="py-1 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-xs rounded-xl border border-rose-200 flex items-center gap-1 transition-colors cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5 text-rose-500" />
+            <span>View Full Permit (Popup)</span>
+          </button>
         </div>
 
-        {/* Participants */}
-        <div className="grid grid-cols-2 gap-3 p-3.5 bg-rose-50/50 rounded-2xl border border-rose-100 mb-5 text-xs">
-          <div>
-            <span className="text-slate-500 block text-[11px]">Honored Sweetheart:</span>
-            <span className="font-bold text-slate-900 text-sm">
-              {plan.sweetheartName || 'My Sweetheart'} 🥰
+        {/* Quick Compact Line items */}
+        <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+          <div className="p-2.5 bg-slate-50 rounded-xl">
+            <span className="text-[10px] text-slate-400 font-medium block flex items-center gap-1">
+              <Calendar className="w-3 h-3 text-rose-500" /> When:
             </span>
-          </div>
-          <div>
-            <span className="text-slate-500 block text-[11px]">Sponsoring Admirer:</span>
-            <span className="font-bold text-slate-900 text-sm">
-              {plan.admirerName || 'Your Admirer'} ❤️
+            <span className="font-bold text-slate-900 text-xs block truncate mt-0.5">
+              {formattedDate}
             </span>
-          </div>
-        </div>
-
-        {/* Line Items Table */}
-        <div className="space-y-3.5 mb-6 text-xs">
-          {/* Date & Time */}
-          <div className="flex items-start justify-between py-2 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-rose-500 shrink-0" />
-              <div>
-                <span className="font-semibold text-slate-800">Date &amp; Time</span>
-                <p className="text-[11px] text-slate-500">{timeDisplay}</p>
-              </div>
-            </div>
-            <span className="font-bold text-slate-900 text-right">{formattedDate}</span>
+            <span className="text-[10px] text-slate-500 block truncate">{timeDisplay}</span>
           </div>
 
-          {/* Destination */}
-          <div className="flex items-start justify-between py-2 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-rose-500 shrink-0" />
-              <div>
-                <span className="font-semibold text-slate-800">Destination (Ethiopia)</span>
-                <p className="text-[11px] text-slate-500">{placeCat?.title} Category</p>
-              </div>
-            </div>
-            <div className="text-right max-w-[200px]">
-              <span className="font-bold text-slate-900 block truncate">
-                {finalPlaceName}
-              </span>
-              {plan.placeSpecificNote && (
-                <span className="text-[10px] text-slate-500 italic block">
-                  Note: {plan.placeSpecificNote}
-                </span>
-              )}
-            </div>
+          <div className="p-2.5 bg-slate-50 rounded-xl">
+            <span className="text-[10px] text-slate-400 font-medium block flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-rose-500" /> Where:
+            </span>
+            <span className="font-bold text-slate-900 text-xs block truncate mt-0.5">
+              {finalPlaceName}
+            </span>
+            <span className="text-[10px] text-slate-500 block truncate">{placeCat?.title}</span>
           </div>
 
-          {/* Food Feasts */}
-          <div className="flex items-start justify-between py-2 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <Utensils className="w-4 h-4 text-rose-500 shrink-0" />
-              <div>
-                <span className="font-semibold text-slate-800">Selected Feasts</span>
-                <p className="text-[11px] text-slate-500">
-                  {plan.foodSpecialRequest || 'Delicacies chosen with love'}
-                </p>
-              </div>
-            </div>
-            <span className="font-medium text-slate-900 text-right max-w-[220px]">
+          <div className="p-2.5 bg-slate-50 rounded-xl">
+            <span className="text-[10px] text-slate-400 font-medium block flex items-center gap-1">
+              <Utensils className="w-3 h-3 text-rose-500" /> Feasts:
+            </span>
+            <span className="font-bold text-slate-900 text-xs block truncate mt-0.5">
               {finalDishes.join(', ')}
             </span>
+            <span className="text-[10px] text-slate-500 block truncate">
+              {finalDishes.length} items ordered
+            </span>
           </div>
 
-          {/* Payment Method */}
-          <div className="flex items-start justify-between py-2 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <CreditCard className="w-4 h-4 text-rose-500 shrink-0" />
-              <div>
-                <span className="font-semibold text-slate-800">Payment Channel</span>
-                <p className="text-[11px] text-slate-500">
-                  Contract signed by {plan.sweetheartName || 'Sweetheart'}
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
-              <span className="font-bold uppercase text-slate-900">
-                {plan.paymentMethod === 'telebirr' ? 'Telebirr Mobile' : 'CBE (Commercial Bank)'}
-              </span>
-              <span className="block text-[10px] text-emerald-600 font-semibold">
-                &bull; 100% Pre-funded
-              </span>
-            </div>
+          <div className="p-2.5 bg-slate-50 rounded-xl">
+            <span className="text-[10px] text-slate-400 font-medium block flex items-center gap-1">
+              <CreditCard className="w-3 h-3 text-rose-500" /> Total Due:
+            </span>
+            <span className="font-bold text-emerald-600 text-xs block mt-0.5">
+              0.00 ETB (Free!)
+            </span>
+            <span className="text-[10px] text-slate-500 uppercase block truncate">
+              {plan.paymentMethod} Sponsor
+            </span>
           </div>
         </div>
 
-        {/* Totals & Pricing Breakdown */}
-        <div className="p-4 bg-slate-50 rounded-2xl space-y-1.5 text-xs mb-5">
-          <div className="flex justify-between text-slate-600">
-            <span>Date Expenses (Food, Venue, Transport):</span>
-            <span className="line-through text-slate-400">2,500.00 ETB</span>
+        <div className="flex items-center justify-between pt-2 border-t border-dashed border-slate-200 text-xs">
+          <div className="flex items-center gap-1 text-[11px] text-slate-500">
+            <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
+            <span>Guaranteed with Love &bull; Couple Maber</span>
           </div>
-          <div className="flex justify-between text-slate-600">
-            <span>Admirer Love Discount:</span>
-            <span className="text-rose-600">-100%</span>
-          </div>
-          <div className="pt-2 border-t border-slate-200 flex justify-between items-center text-sm font-bold">
-            <span className="text-slate-900">Sweetheart Total Due:</span>
-            <div className="text-right">
-              <span className="text-emerald-600 text-base">0.00 ETB</span>
-              <span className="block text-[10px] text-slate-500 font-normal">
-                (Payment required in smiles &amp; hugs)
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Signature & Seal */}
-        <div className="flex items-center justify-between pt-3 border-t border-dashed border-slate-300">
-          <div className="flex items-center gap-2">
-            <QrCode className="w-10 h-10 text-slate-700" />
-            <div className="text-[10px] text-slate-500 leading-tight">
-              <span>SCAN TO REDEEM:</span>
-              <br />
-              <strong className="text-slate-800">UNCONDITIONAL LOVE</strong>
-            </div>
-          </div>
-
-          <div className="text-right">
-            <span className="text-[10px] text-slate-400 uppercase tracking-widest block">
-              Authorization Signature
-            </span>
-            <span className="font-serif italic font-bold text-rose-600 text-sm">
-              {plan.signatureText || plan.sweetheartName || 'Sweetheart Sealed'} ✍️
-            </span>
-          </div>
+          <span className="font-serif italic font-bold text-rose-600 text-xs">
+            {plan.signatureText || 'Signed'} ✍️
+          </span>
         </div>
       </div>
 
-      {/* Action Buttons for Mobile & Desktop */}
-      <div className="space-y-3">
-        {/* Share & Copy Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      {/* Action Buttons for Mobile & Desktop (compact grid) */}
+      <div className="space-y-2">
+        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={handleCopyShare}
-            className="py-3 px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-xs border border-slate-200 shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-colors"
+            className="py-2.5 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-xs border border-slate-200 shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
           >
             {copied ? (
               <>
-                <Check className="w-4 h-4 text-emerald-600" />
-                <span className="text-emerald-600 font-bold">Details Copied!</span>
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-emerald-600 font-bold">Copied!</span>
               </>
             ) : (
               <>
-                <Copy className="w-4 h-4 text-rose-500" />
-                <span>Copy Summary for Sweetheart / WhatsApp</span>
+                <Copy className="w-3.5 h-3.5 text-rose-500" />
+                <span className="truncate">Copy WhatsApp</span>
               </>
             )}
           </button>
@@ -345,46 +263,53 @@ export const ApprovedReceipt: React.FC<ApprovedReceiptProps> = ({ plan, onRestar
             href={getGoogleCalendarUrl()}
             target="_blank"
             rel="noopener noreferrer"
-            className="py-3 px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-xs border border-slate-200 shadow-xs flex items-center justify-center gap-2 transition-colors text-center"
+            className="py-2.5 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-xs border border-slate-200 shadow-2xs flex items-center justify-center gap-1.5 transition-colors text-center"
           >
-            <Calendar className="w-4 h-4 text-rose-500" />
-            <span>Add to Google Calendar</span>
+            <Calendar className="w-3.5 h-3.5 text-rose-500" />
+            <span className="truncate">Add to Calendar</span>
           </a>
         </div>
 
-        {/* Download & Print Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={handleDownloadICS}
-            className="py-3 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-900 font-semibold text-xs border border-rose-200 flex items-center justify-center gap-2 cursor-pointer transition-colors"
+            className="py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-900 font-semibold text-xs border border-rose-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
           >
-            <Download className="w-4 h-4 text-rose-600" />
-            <span>Download Apple / Phone Calendar (.ics)</span>
+            <Download className="w-3.5 h-3.5 text-rose-600" />
+            <span className="truncate">Save .ICS</span>
           </button>
 
           <button
             type="button"
             onClick={handlePrint}
-            className="py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-xs"
+            className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
           >
-            <Printer className="w-4 h-4 text-white" />
-            <span>Print / Save as PDF</span>
+            <Printer className="w-3.5 h-3.5 text-white" />
+            <span className="truncate">Print / PDF</span>
           </button>
         </div>
 
         {/* Restart / Edit Date button */}
-        <div className="pt-2 text-center">
+        <div className="pt-1 text-center">
           <button
             type="button"
             onClick={onRestart}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-rose-600 transition-colors py-2 px-3 rounded-lg hover:bg-rose-50 cursor-pointer"
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-rose-600 transition-colors py-1 px-2.5 rounded-lg hover:bg-rose-50 cursor-pointer"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-3 h-3" />
             <span>Plan Another Date or Modify Choices</span>
           </button>
         </div>
       </div>
+
+      {/* FULL CERTIFICATE POPUP MODAL */}
+      <ReceiptModal
+        isOpen={isReceiptModalOpen}
+        plan={plan}
+        onClose={() => setIsReceiptModalOpen(false)}
+        onPrint={handlePrint}
+      />
     </div>
   );
 };
