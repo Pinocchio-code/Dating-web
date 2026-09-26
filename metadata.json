@@ -1,0 +1,6 @@
+{
+  "name": "Sweetheart Date Reservation",
+  "description": "A playful interactive dating reservation app to ask your sweetheart out, customize date details, pick places and food, sign a Telebirr or CBE payment contract, and issue an approved date receipt.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
